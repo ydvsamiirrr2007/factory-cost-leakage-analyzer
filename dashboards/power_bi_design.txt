@@ -1,0 +1,29 @@
+Total Leakage = SUM('fact'[total_leakage])
+
+Total Production Cost = SUM('fact'[total_production_cost])
+
+Leakage % = DIVIDE([Total Leakage], [Total Production Cost], 0)
+
+Material Leakage = SUM('fact'[material_leakage])
+
+Downtime Loss = SUM('fact'[downtime_hrs]) * 200
+
+Energy Leakage = SUM('fact'[energy_leakage])
+
+Quality Loss = SUM('fact'[quality_leakage])
+
+Priority Score = AVERAGE('fact'[priority_score])
+
+Cascade Total Loss = SUM('cascade'[total_cascade_loss])
+
+Recoverable Savings = 
+    SUMX('fact', 
+        IF('fact'[priority_level] = "Critical" || 'fact'[priority_level] = "High",
+           'fact'[total_leakage] * 0.7,   // 70% recoverable
+           'fact'[total_leakage] * 0.3)
+    )
+
+Top 5 Leakage Sources = 
+    TOPN(5, 
+        SUMMARIZE('fact', 'fact'[machine_id], "Loss", SUM('fact'[total_leakage])),
+        [Loss], DESC)
